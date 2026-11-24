@@ -1,0 +1,14 @@
+---
+- name: Pull application image by immutable SHA tag
+  community.docker.docker_image:
+    name: "{{ app_image }}:{{ app_tag }}"
+    source: pull
+
+- name: Run PR11 application container
+  community.docker.docker_container:
+    name: "{{ app_container_name }}"
+    image: "{{ app_image }}:{{ app_tag }}"
+    state: started
+    restart_policy: unless-stopped
+    published_ports:
+      - "127.0.0.1:{{ app_host_port }}:{{ app_internal_port }}"

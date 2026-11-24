@@ -1,0 +1,62 @@
+---
+- name: Verify PR11 deployment
+  hosts: servers
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Check SSH effective configuration
+      ansible.builtin.command: sshd -T
+      register: sshd_config
+      changed_when: false
+
+    - name: Verify SSH hardening
+      ansible.builtin.assert:
+        that:
+          - "'port 2222' in sshd_config.stdout"
+          - "'permitrootlogin no' in sshd_config.stdout"
+          - "'passwordauthentication no' in sshd_config.stdout"
+          - "'pubkeyauthentication yes' in sshd_config.stdout"
+        fail_msg: "SSH hardening verification failed"
+        success_msg: "SSH hardening is correct"
+
+    - name: Validate Nginx configuration
+      ansible.builtin.command: nginx -t
+      register: nginx_test
+      changed_when: false
+
+    - name: Get application container information
+      community.docker.docker_container_info:
+        name: "{{ app_container_name }}"
+      register: app_container
+
+    - name: Verify application container is running
+      ansible.builtin.assert:
+        that:
+          - app_container.exists
+          - app_container.container.State.Running
+        fail_msg: "PR11 application container is not running"
+        success_msg: "PR11 application container is running"
+
+    - name: Check application directly
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ app_host_port }}/"
+        status_code: 200
+        return_content: true
+      register: app_response
+
+    - name: Check application through Nginx
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:8080/"
+        status_code: 200
+        return_content: true
+      register: nginx_response
+
+    - name: Show verification result
+      ansible.builtin.debug:
+        msg:
+          - "SSH hardening: OK"
+          - "Nginx configuration: OK"
+          - "Container: running"
+          - "Direct application HTTP: {{ app_response.status }}"
+          - "Nginx reverse proxy HTTP: {{ nginx_response.status }}"
