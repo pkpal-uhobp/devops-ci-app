@@ -1,0 +1,10 @@
+---
+- name: Configure DevOps server - PR11
+  hosts: servers
+  become: true
+
+  roles:
+    - base
+    - ssh
+    - nginx
+    - app

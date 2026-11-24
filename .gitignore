@@ -2,3 +2,15 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .coverage
+
+# Ansible and deployment secrets
+.ssh/
+*.pem
+*.key
+*.retry
+.env
+.env.*
+vault-password*
+devops_vm
+id_ed25519
+id_rsa

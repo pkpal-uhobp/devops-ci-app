@@ -1,0 +1,32 @@
+---
+- name: Ensure Nginx is installed
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Deploy PR11 Nginx configuration
+  ansible.builtin.template:
+    src: pr11.conf.j2
+    dest: /etc/nginx/sites-available/pr11
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload Nginx
+
+- name: Enable PR11 Nginx site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/pr11
+    dest: /etc/nginx/sites-enabled/pr11
+    state: link
+    force: true
+  notify: Reload Nginx
+
+- name: Validate Nginx configuration
+  ansible.builtin.command: nginx -t
+  changed_when: false
+
+- name: Ensure Nginx is enabled and running
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true

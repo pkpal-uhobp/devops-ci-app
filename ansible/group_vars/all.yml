@@ -1,0 +1,11 @@
+---
+ssh_port: 2222
+ssh_permit_root_login: "no"
+ssh_password_authentication: "no"
+ssh_pubkey_authentication: "yes"
+
+app_image: "ghcr.io/pkpal-uhobp/devops-ci-app"
+app_tag: "bbf00ac4174cf4caf906c91d72605c594a4bdf53"
+app_container_name: "devops-ci-app"
+app_host_port: 5002
+app_internal_port: 5000
